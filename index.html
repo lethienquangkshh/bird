@@ -1,392 +1,430 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stickman Bubble Sort Animation with Sound</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      background-color: #0d0d11;
-      color: #fff;
-      font-family: 'Courier New', Courier, monospace;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-    }
-    .header {
-      text-align: center;
-      margin-bottom: 15px;
-      max-width: 600px;
-    }
-    .header p {
-      color: #aaa;
-      font-size: 15px;
-      line-height: 1.4;
-      margin-bottom: 10px;
-    }
-    .complexity {
-      background: #16161e;
-      padding: 6px 16px;
-      border-radius: 6px;
-      display: inline-block;
-      border: 1px solid #282838;
-      font-weight: bold;
-    }
-    .complexity span {
-      color: #4db8ff;
-    }
-    canvas {
-      background: #121218;
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-      border: 1px solid #222230;
-    }
-    .controls {
-      margin-top: 20px;
-      display: flex;
-      gap: 15px;
-    }
-    button {
-      padding: 10px 24px;
-      background: #4db8ff;
-      border: none;
-      color: #000;
-      font-weight: bold;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-      transition: 0.2s;
-    }
-    button:hover {
-      background: #80d4ff;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flappy Bird</title>
+<style>
+* {
+box-sizing: border-box;
+margin: 0;
+padding: 0;
+}
+
+body {
+background-color: #1a1a1a;
+font-family: 'Arial', sans-serif;
+display: flex;
+justify-content: center;
+align-items: center;
+min-height: 100vh;
+overflow: hidden;
+}
+
+#game-container {
+position: relative;
+width: 400px;
+height: 600px;
+box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+border-radius: 12px;
+overflow: hidden;
+}
+
+canvas {
+display: block;
+background: #70c5ce;
+}
+
+/* Giao diện UI Đăng nhập & Bảng xếp hạng */
+.ui-layer {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: rgba(0, 0, 0, 0.75);
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+color: #fff;
+z-index: 10;
+padding: 20px;
+}
+
+.hidden {
+display: none !important;
+}
+
+h2 {
+margin-bottom: 15px;
+color: #f1c40f;
+text-transform: uppercase;
+letter-spacing: 2px;
+}
+
+input[type="text"] {
+width: 80%;
+padding: 12px;
+border: none;
+border-radius: 25px;
+outline: none;
+text-align: center;
+font-size: 16px;
+margin-bottom: 15px;
+}
+
+button.start-btn {
+padding: 12px 30px;
+border: none;
+border-radius: 25px;
+background: #2ecc71;
+color: white;
+font-weight: bold;
+font-size: 16px;
+cursor: pointer;
+transition: transform 0.2s, background 0.2s;
+}
+
+button.start-btn:hover {
+background: #27ae60;
+transform: scale(1.05);
+}
+
+.leaderboard {
+width: 100%;
+max-height: 180px;
+overflow-y: auto;
+margin-top: 15px;
+background: rgba(255, 255, 255, 0.1);
+border-radius: 8px;
+padding: 10px;
+}
+
+.leaderboard-item {
+display: flex;
+justify-content: space-between;
+padding: 6px 10px;
+border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+font-size: 14px;
+}
+
+.leaderboard-item:last-child {
+border-bottom: none;
+}
+
+/* Phong cách cho nút Mạng xã hội */
+.social-links {
+display: flex;
+gap: 12px;
+margin-top: 15px;
+}
+
+.social-btn {
+display: inline-flex;
+align-items: center;
+justify-content: center;
+padding: 8px 16px;
+border-radius: 20px;
+color: #fff;
+text-decoration: none;
+font-size: 13px;
+font-weight: bold;
+transition: transform 0.2s, opacity 0.2s;
+}
+
+.social-btn:hover {
+transform: scale(1.08);
+opacity: 0.9;
+}
+
+.btn-facebook {
+background-color: #1877f2;
+}
+
+.btn-instagram {
+background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+}
+</style>
 </head>
 <body>
 
-  <div class="header">
-    <p>The Stickman repeatedly swaps adjacent numbers if they are in wrong order.</p>
-    <div class="complexity">
-      Time: <span>O(n²)</span> &nbsp;&nbsp;&nbsp; Space: <span>O(1)</span>
-    </div>
-  </div>
+<div id="game-container">
+<canvas id="birdCanvas" width="400" height="600"></canvas>
 
-  <canvas id="sortCanvas" width="650" height="320"></canvas>
-  
-  <div class="controls">
-    <button onclick="restartAnimation()">Chạy lại</button>
-  </div>
+<!-- Màn hình đăng nhập & Bảng xếp hạng -->
+<div id="login-screen" class="ui-layer">
+<h2>Flappy Bird</h2>
+<input type="text" id="player-name" placeholder="Nhập tên người chơi..." maxlength="15">
+<button id="start-btn" class="start-btn">BẮT ĐẦU CHƠI</button>
+<div class="leaderboard" id="leaderboard-list">
+<!-- Bảng xếp hạng sẽ tự động cập nhật ở đây -->
+</div>
 
-  <script>
-    // --- 1. TẠO BỘ PHÁT ÂM THANH BẰNG WEB AUDIO API ---
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    let audioCtx = null;
+<!-- Nút liên kết Facebook & Instagram của bạn -->
+<div class="social-links">
+<!-- THAY LINK FACEBOOK CỦA BẠN VÀO HREF DƯỚI ĐÂY -->
+<a href="https://www.facebook.com/thienqyang" target="_blank" class="social-btn btn-facebook">
+Facebook
+</a>
 
-    function initAudio() {
-      if (!audioCtx) {
-        audioCtx = new AudioCtx();
-      }
-    }
+<!-- THAY LINK INSTAGRAM CỦA BẠN VÀO HREF DƯỚI ĐÂY -->
+<a href="https://www.instagram.com/#reactivated" target="_blank" class="social-btn btn-instagram">
+Instagram
+</a>
+</div>
+</div>
+</div>
 
-    // Âm thanh tiếng bước chân
-    function playStepSound() {
-      if (!audioCtx) return;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(120, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.05);
-      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.05);
-    }
+<script>
+const canvas = document.getElementById('birdCanvas');
+const ctx = canvas.getContext('2d');
 
-    // Âm thanh nhấc / trượt bóng (Bloop/Pop)
-    function playSwapSound(freq = 400) {
-      if (!audioCtx) return;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(freq * 1.8, audioCtx.currentTime + 0.15);
-      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.15);
-    }
+const loginScreen = document.getElementById('login-screen');
+const playerNameInput = document.getElementById('player-name');
+const startBtn = document.getElementById('start-btn');
+const leaderboardList = document.getElementById('leaderboard-list');
 
-    // Âm thanh khi đặt bóng xuống mặt đất
-    function playDropSound() {
-      if (!audioCtx) return;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(200, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.1);
-      gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.1);
-    }
+// Biến game
+let gameState = 'START'; // START, PLAYING, GAMEOVER
+let playerName = '';
+let score = 0;
+let frames = 0;
 
-    // Âm thanh hoàn thành (Chime)
-    function playWinSound() {
-      if (!audioCtx) return;
-      [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
-        setTimeout(() => {
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-          gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-          osc.start();
-          osc.stop(audioCtx.currentTime + 0.3);
-        }, idx * 100);
-      });
-    }
+// Con chim
+const bird = {
+x: 50,
+y: 150,
+w: 30,
+h: 30,
+gravity: 0.25,
+jump: 4.6,
+velocity: 0,
+draw() {
+ctx.fillStyle = '#f1c40f';
+ctx.beginPath();
+ctx.arc(this.x, this.y, 15, 0, Math.PI * 2);
+ctx.fill();
+// Mắt
+ctx.fillStyle = '#fff';
+ctx.beginPath();
+ctx.arc(this.x + 6, this.y - 4, 5, 0, Math.PI * 2);
+ctx.fill();
+ctx.fillStyle = '#000';
+ctx.beginPath();
+ctx.arc(this.x + 8, this.y - 4, 2, 0, Math.PI * 2);
+ctx.fill();
 
+// Mỏ
+ctx.fillStyle = '#e67e22';
+ctx.beginPath();
+ctx.arc(this.x + 10, this.y + 2, 6, 0, Math.PI * 2);
+ctx.fill();
+},
+update() {
+if (gameState === 'PLAYING') {
+this.velocity += this.gravity;
+this.y += this.velocity;
 
-    // --- 2. CẤU HÌNH VÀ VẼ CANVAS ---
-    const canvas = document.getElementById("sortCanvas");
-    const ctx = canvas.getContext("2d");
+// Va chạm mặt đất
+if (this.y + 15 >= canvas.height - 50) {
+this.y = canvas.height - 50 - 15;
+gameOver();
+}
+}
+},
+flap() {
+this.velocity = -this.jump;
+},
 
-    const initialNumbers = [45, 30, 51, 68, 24, 90, 12];
-    let balls = [];
+reset() {
+this.y = 150;
+this.velocity = 0;
+}
+};
 
-    const groundY = 240;
-    const startX = 80;
-    const gap = 75;
+// Ống nước
+const pipes = {
+position: [],
+w: 50,
+gap: 120,
+dx: 2,
 
-    let stickmanX = startX;
-    let i = 0, j = 0;
-    let isSortedCount = 0;
-    let state = "MOVE";
-    let animProgress = 0;
-    let stepTimer = 0;
-    let hasPlayedWinSound = false;
+draw() {
+ctx.fillStyle = '#2ecc71';
+for (let p of this.position) {
+// Ống trên
+ctx.fillRect(p.x, 0, this.w, p.top);
+// Ống dưới
+ctx.fillRect(p.x, p.top + this.gap, this.w, canvas.height - p.top - this.gap - 50);
+}
+},
 
-    class Ball {
-      constructor(val, index) {
-        this.val = val;
-        this.x = startX + index * gap;
-        this.y = groundY - 25;
-        this.radius = 22;
-        this.status = "normal";
-      }
+update() {
+if (gameState !== 'PLAYING') return;
 
-      draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+if (frames % 100 === 0) {
+this.position.push({
+x: canvas.width,
+top: Math.floor(Math.random() * (250 - 50 + 1)) + 50
+});
+}
 
-        ctx.save();
-        if (this.status === "active") {
-          ctx.fillStyle = "#ff4d4d";
-          ctx.shadowColor = "#ff3333";
-          ctx.shadowBlur = 18;
-        } else if (this.status === "sorted") {
-          ctx.fillStyle = "#76e033";
-          ctx.shadowColor = "#66cc00";
-          ctx.shadowBlur = 18;
-        } else {
-          ctx.fillStyle = "#d0d0d0";
-          ctx.shadowColor = "#aaaaaa";
-          ctx.shadowBlur = 5;
-        }
+for (let i = 0; i < this.position.length; i++) {
+let p = this.position[i];
+p.x -= this.dx;
 
-        ctx.fill();
-        ctx.restore();
+// Va chạm ống
+if (
+bird.x + 15 > p.x &&
+bird.x - 15 < p.x + this.w &&
+(bird.y - 15 < p.top || bird.y + 15 > p.top + this.gap)
+) {
+gameOver();
+}
 
-        ctx.fillStyle = "#000";
-        ctx.font = "bold 15px Arial";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(this.val, this.x, this.y);
-      }
-    }
+// Cộng điểm
+if (p.x + this.w < bird.x && !p.passed) {
+score++;
+p.passed = true;
+}
 
-    function init() {
-      balls = initialNumbers.map((num, idx) => new Ball(num, idx));
-      stickmanX = balls[0].x - 30;
-      i = 0;
-      j = 0;
-      isSortedCount = 0;
-      state = "MOVE";
-      animProgress = 0;
-      hasPlayedWinSound = false;
-    }
+// Xóa ống ngoài màn hình
+if (p.x + this.w < 0) {
+this.position.shift();
+i--;
+}
+}
+},
 
-    function drawGround() {
-      ctx.fillStyle = "#22222d";
-      ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
-      ctx.strokeStyle = "#383848";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(0, groundY);
-      ctx.lineTo(canvas.width, groundY);
-      ctx.stroke();
-    }
+reset() {
+this.position = [];
+}
+};
 
-    function drawStickman(x, liftArm = false) {
-      const headY = groundY - 70;
-      ctx.strokeStyle = "#ffffff";
-      ctx.lineWidth = 3;
-      ctx.lineCap = "round";
+// Mặt đất
+const fg = {
+h: 50,
+draw() {
+ctx.fillStyle = '#ded895';
+ctx.fillRect(0, canvas.height - this.h, canvas.width, this.h);
+ctx.fillStyle = '#73bf2e';
+ctx.fillRect(0, canvas.height - this.h, canvas.width, 10);
+}
+};
 
-      ctx.beginPath();
-      ctx.arc(x, headY, 10, 0, Math.PI * 2);
-      ctx.stroke();
+// Quản lý Bảng xếp hạng (LocalStorage)
+function getScores() {
+return JSON.parse(localStorage.getItem('flappy_scores')) || [];
+}
 
-      ctx.beginPath();
-      ctx.moveTo(x, headY + 10);
-      ctx.lineTo(x, groundY - 25);
-      ctx.stroke();
+function saveScore(name, score) {
+if (!name) return;
+let scores = getScores();
+scores.push({ name, score });
+scores.sort((a, b) => b.score - a.score);
+scores = scores.slice(0, 5); // Giữ top 5
+localStorage.setItem('flappy_scores', JSON.stringify(scores));
+}
 
-      // Chân di chuyển nhịp nhàng
-      const legOffset = Math.sin(x * 0.2) * 8;
-      ctx.beginPath();
-      ctx.moveTo(x, groundY - 25);
-      ctx.lineTo(x - 12 + legOffset, groundY);
-      ctx.moveTo(x, groundY - 25);
-      ctx.lineTo(x + 12 - legOffset, groundY);
-      ctx.stroke();
+function updateLeaderboardUI() {
+const scores = getScores();
+leaderboardList.innerHTML = '<h3 style="margin-bottom:8px; text-align:center;">TOP BẢNG XẾP HẠNG</h3>';
+if (scores.length === 0) {
+leaderboardList.innerHTML += '<div style="text-align:center; font-size:12px; color:#ccc;">Chưa có dữ liệu</div>';
+return;
+}
+scores.forEach((item, index) => {
+leaderboardList.innerHTML += `
+<div class="leaderboard-item">
+<span>#${index + 1} ${item.name}</span>
+<span><b>${item.score}</b> đ</span>
+</div>
+`;
+});
+}
 
-      // Tay
-      ctx.beginPath();
-      if (liftArm) {
-        ctx.moveTo(x, headY + 25);
-        ctx.lineTo(x - 22, headY + 10);
-        ctx.moveTo(x, headY + 25);
-        ctx.lineTo(x + 22, headY + 30);
-      } else {
-        ctx.moveTo(x, headY + 25);
-        ctx.lineTo(x - 15, headY + 40);
-        ctx.moveTo(x, headY + 25);
-        ctx.lineTo(x + 15, headY + 40);
-      }
-      ctx.stroke();
-    }
+// Sự kiện & Xử lý Game
+startBtn.addEventListener('click', startGame);
 
-    // --- 3. ANIMATION LOOP ---
-    function animate() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawGround();
+window.addEventListener('keydown', (e) => {
+if (e.code === 'Space') {
+if (gameState === 'PLAYING') {
+bird.flap();
+} else if (gameState === 'GAMEOVER') {
+resetGame();
+}
+}
+});
 
-      const n = balls.length;
+canvas.addEventListener('click', () => {
+if (gameState === 'PLAYING') {
+bird.flap();
+} else if (gameState === 'GAMEOVER') {
+resetGame();
+}
+});
 
-      balls.forEach((b, idx) => {
-        if (idx >= n - isSortedCount) {
-          b.status = "sorted";
-        } else if (idx === j || idx === j + 1) {
-          b.status = "active";
-        } else {
-          b.status = "normal";
-        }
-      });
+function startGame() {
+const name = playerNameInput.value.trim();
+if (!name) {
+alert('Vui lòng nhập tên của bạn!');
+return;
+}
+playerName = name;
+loginScreen.classList.add('hidden');
+resetGame();
+}
 
-      if (i < n - 1) {
-        let b1 = balls[j];
-        let b2 = balls[j + 1];
-        let targetX = (b1.x + b2.x) / 2;
+function gameOver() {
+gameState = 'GAMEOVER';
+saveScore(playerName, score);
+updateLeaderboardUI();
+setTimeout(() => {
+loginScreen.classList.remove('hidden');
+}, 500);
+}
 
-        if (state === "MOVE") {
-          const dist = targetX - stickmanX;
-          if (Math.abs(dist) > 2) {
-            stickmanX += dist * 0.08;
-            
-            // Âm thanh bước chân theo chu kỳ di chuyển
-            stepTimer++;
-            if (stepTimer % 12 === 0) playStepSound();
-          } else {
-            if (b1.val > b2.val) {
-              state = "LIFT";
-              playSwapSound(350); // Phát âm thanh khi chuẩn bị đổi
-            } else {
-              state = "NEXT";
-            }
-          }
-        } else if (state === "LIFT") {
-          animProgress += 0.05;
-          b1.y = groundY - 25 - Math.sin(animProgress * Math.PI) * 35;
-          if (animProgress >= 0.5) {
-            state = "SWAP";
-            animProgress = 0;
-            playSwapSound(550); // Âm thanh trượt bóng
-          }
-        } else if (state === "SWAP") {
-          animProgress += 0.04;
-          let distance = gap;
-          b1.x += 0.04 * distance;
-          b2.x -= 0.04 * distance;
+function resetGame() {
+bird.reset();
+pipes.reset();
+score = 0;
+frames = 0;
+gameState = 'PLAYING';
+}
 
-          if (animProgress >= 1) {
-            balls[j] = b2;
-            balls[j + 1] = b1;
-            b1.x = startX + (j + 1) * gap;
-            b2.x = startX + j * gap;
-            state = "DROP";
-            animProgress = 0;
-          }
-        } else if (state === "DROP") {
-          animProgress += 0.05;
-          b1.y = groundY - 60 + animProgress * 35;
-          if (animProgress >= 1) {
-            b1.y = groundY - 25;
-            playDropSound(); // Âm thanh đặt bóng xuống
-            state = "NEXT";
-            animProgress = 0;
-          }
-        } else if (state === "NEXT") {
-          j++;
-          if (j >= n - 1 - i) {
-            j = 0;
-            i++;
-            isSortedCount++;
-          }
-          state = "MOVE";
-        }
-      } else {
-        isSortedCount = n;
-        stickmanX += (canvas.width + 50 - stickmanX) * 0.05;
-        
-        if (!hasPlayedWinSound) {
-          playWinSound(); // Âm thanh chúc mừng hoàn thành
-          hasPlayedWinSound = true;
-        }
-      }
+// Vẽ điểm lên Canvas
+function drawScore() {
+ctx.fillStyle = '#FFF';
+ctx.strokeStyle = '#000';
+ctx.lineWidth = 2;
+ctx.font = '35px Squrific, sans-serif';
+ctx.fillText(score, canvas.width / 2 - 10, 50);
+ctx.strokeText(score, canvas.width / 2 - 10, 50);
+}
 
-      balls.forEach(b => b.draw());
-      drawStickman(stickmanX, state === "LIFT" || state === "SWAP");
+// Vòng lặp Game
+function loop() {
+ctx.fillStyle = '#70c5ce';
+ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      requestAnimationFrame(animate);
-    }
+pipes.draw();
+pipes.update();
+fg.draw();
+bird.draw();
+bird.update();
 
-    function restartAnimation() {
-      initAudio();
-      init();
-    }
+if (gameState === 'PLAYING') {
+drawScore();
+}
 
-    // Kích hoạt Audio Context ngay từ lần chạm đầu tiên
-    window.addEventListener('click', initAudio, { once: true });
+frames++;
+requestAnimationFrame(loop);
+}
 
-    init();
-    animate();
-  </script>
+// Khởi chạy ban đầu
+updateLeaderboardUI();
+loop();
+</script>
 </body>
 </html>
